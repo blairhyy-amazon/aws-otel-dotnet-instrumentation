@@ -29,7 +29,6 @@ internal class AWSServiceHelper
         { AWSServiceType.SQSService, new List<string> { "QueueUrl" } },
         { AWSServiceType.BedrockService, new List<string> { "GuardrailArn", "GuardrailId" } },
         { AWSServiceType.BedrockAgentService, new List<string> { "AgentId", "DataSourceId" } },
-        { AWSServiceType.LambdaService, new List<string> { "FunctionArn" } },
     };
 
     internal static IReadOnlyDictionary<string, string> ParameterAttributeMap = new Dictionary<string, string>()
