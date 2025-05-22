@@ -219,6 +219,12 @@ internal sealed class AWSTracingPipelineHandler : PipelineHandler
         {
             foreach (var parameter in parameters)
             {
+                if (parameter == "TableArn")
+                {
+                    AddDynamoTableArnAttribute(activity, response);
+                    continue;
+                }
+                
                 try
                 {
                     var property = response.GetType().GetProperty(parameter);
@@ -252,6 +258,26 @@ internal sealed class AWSTracingPipelineHandler : PipelineHandler
         }
     }
 
+    private static void AddDynamoTableArnAttribute(Activity activity, AmazonWebServiceResponse response)
+    {
+        var responseObject = response.GetType().GetProperty("Table");
+        if (responseObject != null)
+        {
+            var tableObject = responseObject.GetValue(response);
+            if (tableObject != null)
+            {
+                var property = tableObject.GetType().GetProperty("TableArn");
+                if (property != null)
+                {
+                    if (AWSServiceHelper.ParameterAttributeMap.TryGetValue("TableArn", out var attribute))
+                    {
+                        activity.SetTag(attribute, property.GetValue("TableArn"));
+                    }
+                }
+            }
+        }
+    }
+    
     private static void AddBedrockAgentResponseAttribute(Activity activity, AmazonWebServiceResponse response, string parameter)
     {
         var responseObject = response.GetType().GetProperty(Utils.RemoveSuffix(parameter, "Id"));

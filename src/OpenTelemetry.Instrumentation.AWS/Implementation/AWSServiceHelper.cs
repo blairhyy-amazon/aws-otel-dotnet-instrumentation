@@ -12,7 +12,7 @@ internal class AWSServiceHelper
         { AWSServiceType.DynamoDbService, new List<string> { "TableName" } },
         { AWSServiceType.SQSService, new List<string> { "QueueUrl", "QueueName" } },
         { AWSServiceType.S3Service, new List<string> { "BucketName" } },
-        { AWSServiceType.KinesisService, new List<string> { "StreamName" } },
+        { AWSServiceType.KinesisService, new List<string> { "StreamName", "StreamArn" } },
         { AWSServiceType.LambdaService, new List<string> { "UUID", "FunctionName" } },
         { AWSServiceType.SecretsManagerService, new List<string> { "SecretId" } },
         { AWSServiceType.SNSService, new List<string> { "TopicArn" } },
@@ -24,10 +24,12 @@ internal class AWSServiceHelper
 
     internal static IReadOnlyDictionary<string, List<string>> ServiceResponseParameterMap = new Dictionary<string, List<string>>()
     {
+        { AWSServiceType.DynamoDbService, new List<string> { "TableArn" } },
         { AWSServiceType.SecretsManagerService, new List<string> { "ARN" } },
         { AWSServiceType.SQSService, new List<string> { "QueueUrl" } },
-        { AWSServiceType.BedrockService, new List<string> { "GuardrailId" } },
+        { AWSServiceType.BedrockService, new List<string> { "GuardrailId", "GuardrailArn" } },
         { AWSServiceType.BedrockAgentService, new List<string> { "AgentId", "DataSourceId" } },
+        { AWSServiceType.LambdaService, new List<string> { "FunctionArn" } },
     };
 
     internal static IReadOnlyDictionary<string, string> ParameterAttributeMap = new Dictionary<string, string>()
@@ -42,6 +44,7 @@ internal class AWSServiceHelper
         { "SecretId", AWSSemanticConventions.AttributeAWSSecretsManagerSecretArn },
         { "ActivityArn", AWSSemanticConventions.AttributeAWSStepFunctionsActivityArn },
         { "StateMachineArn", AWSSemanticConventions.AttributeAWSStepFunctionsStateMachineArn },
+        { "FunctionArn", AWSSemanticConventions.AttributeAWSLambdaFunctionArn },
         { "FunctionName", AWSSemanticConventions.AttributeAWSLambdaFunctionName },
         { "UUID", AWSSemanticConventions.AttributeAWSLambdaResourceMappingId },
         { "ModelId", AWSSemanticConventions.AttributeGenAiModelId },
