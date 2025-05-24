@@ -1,5 +1,5 @@
-using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
+using Amazon.Lambda.Core;
 using Amazon.S3;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.

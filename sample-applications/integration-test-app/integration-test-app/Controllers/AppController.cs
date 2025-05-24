@@ -3,6 +3,9 @@
 
 using System.Diagnostics;
 using System.Net.Http;
+using System.Threading.Tasks;
+using Amazon.Kinesis;
+using Amazon.Kinesis.Model;
 using Amazon.S3;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,6 +17,20 @@ public class AppController : ControllerBase
 {
     private readonly AmazonS3Client s3Client = new AmazonS3Client();
     private readonly HttpClient httpClient = new HttpClient();
+    private readonly AmazonKinesisClient kinesisClient = new AmazonKinesisClient();
+
+    [HttpGet]
+    [Route("/kinesis-stream")]
+    public async Task<string> GetKinesisStream(string streamArn)
+    {
+        var request = new DescribeStreamSummaryRequest { StreamARN = streamArn };
+
+        // var request = new CreateStreamRequest { StreamName = "test_stream" };
+        // var response = await this.kinesisClient.CreateStreamAsync(request);
+        var response = await this.kinesisClient.DescribeStreamSummaryAsync(request);
+        var summary = response.StreamDescriptionSummary;
+        return this.GetTraceId() + summary.StreamARN.ToString();
+    }
 
     [HttpGet]
     [Route("/outgoing-http-call")]
