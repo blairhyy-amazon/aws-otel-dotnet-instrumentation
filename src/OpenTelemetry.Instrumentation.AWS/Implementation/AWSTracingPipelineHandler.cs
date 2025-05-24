@@ -224,7 +224,7 @@ internal sealed class AWSTracingPipelineHandler : PipelineHandler
                     AddDynamoTableArnAttribute(activity, response);
                     continue;
                 }
-                
+
                 try
                 {
                     var property = response.GetType().GetProperty(parameter);
@@ -277,7 +277,7 @@ internal sealed class AWSTracingPipelineHandler : PipelineHandler
             }
         }
     }
-    
+
     private static void AddBedrockAgentResponseAttribute(Activity activity, AmazonWebServiceResponse response, string parameter)
     {
         var responseObject = response.GetType().GetProperty(Utils.RemoveSuffix(parameter, "Id"));
