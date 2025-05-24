@@ -39,6 +39,7 @@ internal sealed class AwsAttributeKeys
 
     // internal static readonly string AttributeAWSSQSQueueUrl = "aws.sqs.queue_url";
     internal static readonly string AttributeAWSSQSQueueName = "aws.sqs.queue_name";
+    internal static readonly string AttributeAWSKinesisStreamArn = "aws.kinesis.stream.arn";
     internal static readonly string AttributeAWSKinesisStreamName = "aws.kinesis.stream_name";
 
     // This attribute is being used here:
@@ -47,6 +48,7 @@ internal sealed class AwsAttributeKeys
     // public const string AttributeAwsDynamodbTableNames = "aws.dynamodb.table_names"
     // Going to use the below one because of the manual instrumentation.
     // TODO: update/remove attribute according to auto instrumentation.
+    internal static readonly string AttributeAWSDynamoTableArn = "aws.table.arn";
     internal static readonly string AttributeAWSDynamoTableName = "aws.table_name";
     internal static readonly string AttributeAWSSQSQueueUrl = "aws.queue_url";
 

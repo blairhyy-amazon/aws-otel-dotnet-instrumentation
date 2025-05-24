@@ -91,6 +91,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
         SetEgressOperation(span, attributes);
         SetRemoteServiceAndOperation(span, attributes);
         SetRemoteResourceTypeAndIdentifier(span, attributes);
+        SetRemoteResourceAccountIdAndRegion(span, attributes);
         SetSpanKindForDependency(span, attributes);
         SetRemoteDbUser(span, attributes);
 
@@ -395,7 +396,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
     // This function is used to check for AWS specific attributes and set the RemoteResourceType
     // and RemoteResourceIdentifier accordingly. Right now, this sets it for DDB, S3, Kinesis,
     // and SQS (using QueueName or QueueURL)
-    private static void SetRemoteResourceTypeAndIdentifier(Activity span, ActivityTagsCollection attributes)
+    private static bool SetRemoteResourceTypeAndIdentifier(Activity span, ActivityTagsCollection attributes)
     {
         string? remoteResourceType = null;
         string? remoteResourceIdentifier = null;
@@ -520,7 +521,40 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
             attributes.Add(AttributeAWSRemoteResourceType, remoteResourceType);
             attributes.Add(AttributeAWSRemoteResourceIdentifier, remoteResourceIdentifier);
             attributes.Add(AttributeAWSCloudformationPrimaryIdentifier, cloudformationPrimaryIdentifier);
+            return true;
         }
+
+        return false;
+    }
+
+    private static bool SetRemoteResourceAccountIdAndRegion(Activity span, ActivityTagsCollection attributes)
+    {
+        string[] arnAttributes = new[]
+        {
+            AttributeAWSDynamoTableArn,
+            AttributeAWSKinesisStreamArn,
+            AttributeAWSSNSTopicArn,
+            AttributeAWSSecretsManagerSecretArn,
+            AttributeAWSStepFunctionsActivityArn,
+            AttributeAWSStepFunctionsStateMachineArn,
+        };
+
+        foreach (string attributeKey in arnAttributes)
+        {
+            if (IsKeyPresent(span, attributeKey))
+            {
+                // Arn pattern: arn:partition:service:region:account-id:resource
+                string arn = (string)span.GetTagItem(attributeKey) !;
+                string[] arnParts = arn.Split(':');
+                string authAccountId = arnParts[4];
+                string authRegion = arnParts[3];
+                attributes.Add("aws.remote.resource.account.id", authAccountId);
+                attributes.Add("aws.remote.resource.account.region", authRegion);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string? GetLambdaFunctionNameFromArn(string? stringArn)
