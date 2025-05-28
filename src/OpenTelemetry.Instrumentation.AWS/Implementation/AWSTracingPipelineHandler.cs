@@ -105,6 +105,14 @@ internal sealed class AWSTracingPipelineHandler : PipelineHandler
             {
                 int statusCode = (int)httpResponse.StatusCode;
 
+                string? accessKey = requestContext.ImmutableCredentials.AccessKey;
+                string? determinedSigningRegion = requestContext.Request.DeterminedSigningRegion;
+                if (accessKey != null && determinedSigningRegion != null)
+                {   
+                    activity.SetTag(AWSSemanticConventions.AttributeAWSAuthAccessKey, accessKey);
+                    activity.SetTag(AWSSemanticConventions.AttributeAWSAuthRegion, determinedSigningRegion);
+                }
+                
                 AddStatusCodeToActivity(activity, statusCode);
                 activity.SetTag(AWSSemanticConventions.AttributeHttpResponseContentLength, httpResponse.ContentLength);
 
