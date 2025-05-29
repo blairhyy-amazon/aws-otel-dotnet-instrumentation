@@ -28,6 +28,7 @@ internal static class AWSSemanticConventions
     public const string AttributeAWSStepFunctionsStateMachineArn = "aws.stepfunctions.state_machine.arn";
 
     // AWS Bedrock service attributes not yet defined in semantic conventions
+    public const string AttributeAWSBedrockGuardrailArn = "aws.bedrock.guardrail.arn";
     public const string AttributeAWSBedrockGuardrailId = "aws.bedrock.guardrail.id";
     public const string AttributeAWSBedrockAgentId = "aws.bedrock.agent.id";
     public const string AttributeAWSBedrockKnowledgeBaseId = "aws.bedrock.knowledge_base.id";
