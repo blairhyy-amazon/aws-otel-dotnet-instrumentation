@@ -1119,6 +1119,51 @@ public class AwsMetricAttributesGeneratorTest
             { AttributeAWSAuthRegion, this.awsRemoteResourceRegion },
         };
         this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::Bedrock::DataSource", "aws_data_source_^^id", "aws_knowledge_base_^^id|aws_data_source_^^id", region: this.awsRemoteResourceRegion, accountAccessKey: this.awsRemoteResourceAccessKey);
+
+        // Cross account support
+        // Both account access key and account id are not available
+        attributesCombination = new Dictionary<string, object>
+        {
+            { AttributeAWSS3Bucket, "aws_s3_bucket_name" },
+        };
+        this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::S3::Bucket", "aws_s3_bucket_name", "aws_s3_bucket_name");
+
+        // Account access key is not available
+        attributesCombination = new Dictionary<string, object>
+        {
+            { AttributeAWSSNSTopicArn, "arn:aws:sns:us-west-2:012345678901:aws_topic_arn" },
+        };
+        this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::SNS::Topic", "aws_topic_arn", "arn:aws:sns:us-west-2:012345678901:aws_topic_arn", region: "us-west-2", accountId: "012345678901");
+
+        // Arn with invalid account id
+        attributesCombination = new Dictionary<string, object>
+        {
+            { AttributeAWSSNSTopicArn, "arn:aws:sns:us-west-2:invalid_account_id:aws_topic_arn" },
+        };
+        this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::SNS::Topic", "aws_topic_arn", "arn:aws:sns:us-west-2:invalid_account_id:aws_topic_arn");
+
+        // Arn with invalid region
+        attributesCombination = new Dictionary<string, object>
+        {
+            { AttributeAWSSNSTopicArn, "arn:aws:sns:invalid_region:012345678901:aws_topic_arn" },
+        };
+        this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::SNS::Topic", "aws_topic_arn", "arn:aws:sns:invalid_region:012345678901:aws_topic_arn", region: "invalid_region", accountId: "012345678901");
+
+        // Invalid arn and no account access key
+        attributesCombination = new Dictionary<string, object>
+        {
+            { AttributeAWSSNSTopicArn, "invalid_arn" },
+        };
+        this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::SNS::Topic", "invalid_arn", "invalid_arn");
+
+        // Invalid arn but account access key is available
+        attributesCombination = new Dictionary<string, object>
+        {
+            { AttributeAWSSNSTopicArn, "invalid_arn" },
+            { AttributeAWSAuthAccessKey, this.awsRemoteResourceAccessKey },
+            { AttributeAWSAuthRegion, this.awsRemoteResourceRegion },
+        };
+        this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::SNS::Topic", "invalid_arn", "invalid_arn", region: this.awsRemoteResourceRegion, accountAccessKey: this.awsRemoteResourceAccessKey);
     }
 
     [Fact]
