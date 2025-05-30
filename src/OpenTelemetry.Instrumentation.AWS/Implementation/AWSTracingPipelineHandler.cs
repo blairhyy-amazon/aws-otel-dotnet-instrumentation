@@ -244,12 +244,6 @@ internal sealed class AWSTracingPipelineHandler : PipelineHandler
         {
             foreach (var parameter in parameters)
             {
-                if (parameter == "TableArn")
-                {
-                    AddDynamoTableArnAttribute(activity, response);
-                    continue;
-                }
-
                 try
                 {
                     var property = response.GetType().GetProperty(parameter);
@@ -297,6 +291,12 @@ internal sealed class AWSTracingPipelineHandler : PipelineHandler
                     }
                 }
             }
+        }
+
+        // for DynamoDb, extract table ARN from response Table object. 
+        if (AWSServiceType.IsDynamoDbService(service))
+        {
+            AddDynamoTableArnAttribute(activity, response);
         }
     }
 
