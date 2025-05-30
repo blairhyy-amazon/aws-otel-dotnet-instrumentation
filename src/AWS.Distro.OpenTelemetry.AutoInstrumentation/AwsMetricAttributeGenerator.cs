@@ -9,6 +9,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using static AWS.Distro.OpenTelemetry.AutoInstrumentation.AwsAttributeKeys;
 using static AWS.Distro.OpenTelemetry.AutoInstrumentation.AwsSpanProcessingUtil;
+using static AWS.Distro.OpenTelemetry.AutoInstrumentation.RegionalResourceArnParser;
 using static AWS.Distro.OpenTelemetry.AutoInstrumentation.SqsUrlParser;
 using static OpenTelemetry.Trace.TraceSemanticConventions;
 
@@ -63,9 +64,9 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
         AttributeAWSSecretsManagerSecretArn,
         AttributeAWSStepFunctionsActivityArn,
         AttributeAWSStepFunctionsStateMachineArn,
-        // TODO: Add Guardrail ARN & Lambda ARN
+        AttributeAWSBedrockGuardrailArn,
+        AttributeAWSLambdaFunctionArn,
     };
-
 
     // Special DEPENDENCY attribute value if GRAPHQL_OPERATION_TYPE attribute key is present.
     private static readonly string GraphQL = "graphql";
@@ -112,6 +113,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
                 SetRemoteResourceAccessKeyAndRegion(span, attributes);
             }
         }
+
         SetSpanKindForDependency(span, attributes);
         SetRemoteDbUser(span, attributes);
 
@@ -566,7 +568,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
 
         return false;
     }
-    
+
     private static bool SetRemoteResourceAccountIdAndRegion(Activity span, ActivityTagsCollection attributes)
     {
         string? remoteResourceAccountId = null;
@@ -584,7 +586,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
             {
                 if (IsKeyPresent(span, attributeKey))
                 {
-                    string? arn = (string?) span.GetTagItem(attributeKey);
+                    string? arn = (string?)span.GetTagItem(attributeKey);
                     remoteResourceAccountId = RegionalResourceArnParser.GetAccountId(arn);
                     remoteResourceRegion = RegionalResourceArnParser.GetRegion(arn);
                     break;
@@ -601,6 +603,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
 
         return false;
     }
+
     private static void SetRemoteResourceAccessKeyAndRegion(Activity span, ActivityTagsCollection attributes)
     {
         if (IsKeyPresent(span, AttributeAWSAuthAccessKey))

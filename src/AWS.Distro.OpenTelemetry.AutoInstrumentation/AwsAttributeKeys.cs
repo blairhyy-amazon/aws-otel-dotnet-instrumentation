@@ -27,7 +27,7 @@ internal sealed class AwsAttributeKeys
     internal static readonly string AttributeAWSRemoteResourceAccessKey = "aws.remote.resource.account.access_key";
     internal static readonly string AttributeAWSRemoteResourceAccountId = "aws.remote.resource.account.id";
     internal static readonly string AttributeAWSRemoteResourceRegion = "aws.remote.resource.region";
-    
+
     // This was copied over from AWSSemanticConventions from the here:
     // https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/main/src/OpenTelemetry.Instrumentation.AWS/Implementation/AWSSemanticConventions.cs
     // TODO: add any other attributes keys after auto instrumentation.
@@ -49,7 +49,7 @@ internal sealed class AwsAttributeKeys
     internal static readonly string AttributeAWSSQSQueueName = "aws.sqs.queue_name";
     internal static readonly string AttributeAWSKinesisStreamArn = "aws.kinesis.stream.arn";
     internal static readonly string AttributeAWSKinesisStreamName = "aws.kinesis.stream_name";
-    
+
     // This attribute is being used here:
     // https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/4c6474259ccb08a41eb45ea6424243d4d2c707db/src/OpenTelemetry.Instrumentation.AWS/Implementation/AWSSemanticConventions.cs#L13
     // However, the one in Opentelemetry.SemanticConventions

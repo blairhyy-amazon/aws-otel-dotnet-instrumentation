@@ -38,6 +38,7 @@ public class SqsUrlParser
 
         return null;
     }
+
     public static string? GetAccountId(string? url)
     {
         if (url == null)
@@ -80,9 +81,9 @@ public class SqsUrlParser
     private static bool IsValidSqsUrl(string url)
     {
         string[] splitUrl = url.Split('/');
-        return splitUrl.Length == 3 && 
-               splitUrl[0].StartsWith("sqs", StringComparison.OrdinalIgnoreCase) && 
-               IsAccountId(splitUrl[1]) && 
+        return splitUrl.Length == 3 &&
+               splitUrl[0].StartsWith("sqs", StringComparison.OrdinalIgnoreCase) &&
+               IsAccountId(splitUrl[1]) &&
                IsValidQueueName(splitUrl[2]);
     }
 

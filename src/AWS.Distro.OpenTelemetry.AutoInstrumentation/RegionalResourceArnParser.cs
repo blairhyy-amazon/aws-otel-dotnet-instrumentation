@@ -13,6 +13,7 @@ public class RegionalResourceArnParser
         {
             return arn!.Split(':')[4];
         }
+
         return null;
     }
 
@@ -22,6 +23,7 @@ public class RegionalResourceArnParser
         {
             return arn!.Split(':')[3];
         }
+
         return null;
     }
 
