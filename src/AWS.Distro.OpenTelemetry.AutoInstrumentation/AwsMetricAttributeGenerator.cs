@@ -9,6 +9,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using static AWS.Distro.OpenTelemetry.AutoInstrumentation.AwsAttributeKeys;
 using static AWS.Distro.OpenTelemetry.AutoInstrumentation.AwsSpanProcessingUtil;
+using static AWS.Distro.OpenTelemetry.AutoInstrumentation.RegionalResourceArnParser;
 using static AWS.Distro.OpenTelemetry.AutoInstrumentation.SqsUrlParser;
 using static OpenTelemetry.Trace.TraceSemanticConventions;
 
@@ -54,6 +55,19 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
     private static readonly string NormalizedBedrockRuntimeServiceName = "AWS::BedrockRuntime";
     private static readonly string DbConnectionResourceType = "DB::Connection";
 
+    // List of resource arns to extract cross-account information
+    private static readonly IReadOnlyList<string> ArnAttributes = new[]
+    {
+        AttributeAWSDynamoTableArn,
+        AttributeAWSKinesisStreamArn,
+        AttributeAWSSNSTopicArn,
+        AttributeAWSSecretsManagerSecretArn,
+        AttributeAWSStepFunctionsActivityArn,
+        AttributeAWSStepFunctionsStateMachineArn,
+        AttributeAWSBedrockGuardrailArn,
+        AttributeAWSLambdaFunctionArn,
+    };
+
     // Special DEPENDENCY attribute value if GRAPHQL_OPERATION_TYPE attribute key is present.
     private static readonly string GraphQL = "graphql";
 
@@ -90,7 +104,16 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
         SetService(resource, span, attributes);
         SetEgressOperation(span, attributes);
         SetRemoteServiceAndOperation(span, attributes);
-        SetRemoteResourceTypeAndIdentifier(span, attributes);
+        bool isRemoteResourceIdentifierPresent = SetRemoteResourceTypeAndIdentifier(span, attributes);
+        if (isRemoteResourceIdentifierPresent)
+        {
+            bool isAccountIdAndRegionPresent = SetRemoteResourceAccountIdAndRegion(span, attributes);
+            if (!isAccountIdAndRegionPresent)
+            {
+                SetRemoteResourceAccessKeyAndRegion(span, attributes);
+            }
+        }
+
         SetSpanKindForDependency(span, attributes);
         SetRemoteDbUser(span, attributes);
 
@@ -395,7 +418,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
     // This function is used to check for AWS specific attributes and set the RemoteResourceType
     // and RemoteResourceIdentifier accordingly. Right now, this sets it for DDB, S3, Kinesis,
     // and SQS (using QueueName or QueueURL)
-    private static void SetRemoteResourceTypeAndIdentifier(Activity span, ActivityTagsCollection attributes)
+    private static bool SetRemoteResourceTypeAndIdentifier(Activity span, ActivityTagsCollection attributes)
     {
         string? remoteResourceType = null;
         string? remoteResourceIdentifier = null;
@@ -407,10 +430,20 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
                 remoteResourceType = NormalizedDynamoDBServiceName + "::Table";
                 remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSDynamoTableName));
             }
+            else if (IsKeyPresent(span, AttributeAWSDynamoTableArn))
+            {
+                remoteResourceType = NormalizedDynamoDBServiceName + "::Table";
+                remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSDynamoTableArn))?.Split(':').Last().Replace("table/", string.Empty);
+            }
             else if (IsKeyPresent(span, AttributeAWSKinesisStreamName))
             {
                 remoteResourceType = NormalizedKinesisServiceName + "::Stream";
                 remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSKinesisStreamName));
+            }
+            else if (IsKeyPresent(span, AttributeAWSKinesisStreamArn))
+            {
+                remoteResourceType = NormalizedKinesisServiceName + "::Stream";
+                remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSKinesisStreamArn))?.Split(':').Last().Replace("stream/", string.Empty);
             }
             else if (IsKeyPresent(span, AttributeAWSLambdaFunctionName))
             {
@@ -530,6 +563,59 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
             attributes.Add(AttributeAWSRemoteResourceType, remoteResourceType);
             attributes.Add(AttributeAWSRemoteResourceIdentifier, remoteResourceIdentifier);
             attributes.Add(AttributeAWSCloudformationPrimaryIdentifier, cloudformationPrimaryIdentifier);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool SetRemoteResourceAccountIdAndRegion(Activity span, ActivityTagsCollection attributes)
+    {
+        string? remoteResourceAccountId = null;
+        string? remoteResourceRegion = null;
+
+        if (IsKeyPresent(span, AttributeAWSSQSQueueUrl))
+        {
+            string? url = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSSQSQueueUrl));
+            remoteResourceAccountId = SqsUrlParser.GetAccountId(url);
+            remoteResourceRegion = SqsUrlParser.GetRegion(url);
+        }
+        else
+        {
+            foreach (var attributeKey in ArnAttributes)
+            {
+                if (IsKeyPresent(span, attributeKey))
+                {
+                    string? arn = (string?)span.GetTagItem(attributeKey);
+                    remoteResourceAccountId = RegionalResourceArnParser.GetAccountId(arn);
+                    remoteResourceRegion = RegionalResourceArnParser.GetRegion(arn);
+                    break;
+                }
+            }
+        }
+
+        if (remoteResourceAccountId != null && remoteResourceRegion != null)
+        {
+            attributes.Add(AttributeAWSRemoteResourceAccountId, remoteResourceAccountId);
+            attributes.Add(AttributeAWSRemoteResourceRegion, remoteResourceRegion);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void SetRemoteResourceAccessKeyAndRegion(Activity span, ActivityTagsCollection attributes)
+    {
+        if (IsKeyPresent(span, AttributeAWSAuthAccessKey))
+        {
+            string? remoteResourceAccessKey = (string?)span.GetTagItem(AttributeAWSAuthAccessKey);
+            attributes.Add(AttributeAWSRemoteResourceAccessKey, remoteResourceAccessKey);
+        }
+
+        if (IsKeyPresent(span, AttributeAWSAuthRegion))
+        {
+            string? remoteResourceRegion = (string?)span.GetTagItem(AttributeAWSAuthRegion);
+            attributes.Add(AttributeAWSRemoteResourceRegion, remoteResourceRegion);
         }
     }
 
