@@ -1373,7 +1373,7 @@ public class AwsMetricAttributesGeneratorTest
         Assert.Equal(identifier, actualAWSRemoteResourceIdentifier);
         Assert.Equal(cfnIdentifier, actualAWSCloudformationPrimaryIdentifier);
 
-        // cross acount information
+        // Cross account support
         if (region != null)
         {
             dependencyMetric.TryGetValue(AttributeAWSRemoteResourceRegion, out var actualAWSRemoteResourceRegion);

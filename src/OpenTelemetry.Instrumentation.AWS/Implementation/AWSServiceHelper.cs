@@ -24,7 +24,6 @@ internal class AWSServiceHelper
 
     internal static IReadOnlyDictionary<string, List<string>> ServiceResponseParameterMap = new Dictionary<string, List<string>>()
     {
-        { AWSServiceType.DynamoDbService, new List<string> { "TableArn" } },
         { AWSServiceType.SecretsManagerService, new List<string> { "ARN" } },
         { AWSServiceType.SQSService, new List<string> { "QueueUrl" } },
         { AWSServiceType.BedrockService, new List<string> { "GuardrailArn", "GuardrailId" } },
