@@ -24,6 +24,11 @@ public class KinesisTests(
                 "partition_key"
         });
     }
+    
+    public Task<DescribeStreamResponse> DescribeStream()
+    {
+        return kinesis.DescribeStreamAsync(new DescribeStreamRequest { StreamName = "test_stream", StreamARN = "arn:aws:kinesis:us-west-2:000000000000:stream/test_stream" });
+    }
 
     public Task<DeleteStreamResponse> DeleteStream()
     {

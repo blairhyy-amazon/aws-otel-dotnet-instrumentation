@@ -30,6 +30,11 @@ public class DynamoDBTests(
             }
         });
     }
+    
+    public Task<DescribeTableResponse> DescribeTable()
+    {
+        return ddb.DescribeTableAsync(new DescribeTableRequest { TableName = "test_table" });
+    }
 
     public Task<DeleteTableResponse> DeleteTable()
     {

@@ -54,7 +54,8 @@ builder.Services
     .AddSingleton<SecretsManagerTests>()
     .AddSingleton<SNSTests>()
     .AddSingleton<StepFunctionsTests>()
-    .AddSingleton<BedrockTests>();
+    .AddSingleton<BedrockTests>()
+    .AddSingleton<CrossAccountTests>();
 
 var app = builder.Build();
 
@@ -93,6 +94,10 @@ app.MapGet("ddb/put-item/some-item", (DynamoDBTests ddb) => ddb.PutItem())
     .WithName("put-item")
     .WithOpenApi();
 
+app.MapGet("ddb/describetable/some-table", (DynamoDBTests ddb) => ddb.DescribeTable())
+    .WithName("describe-table")
+    .WithOpenApi();
+
 app.MapGet("ddb/deletetable/delete-table", (DynamoDBTests ddb) => ddb.DeleteTable())
     .WithName("delete-table")
     .WithOpenApi();
@@ -127,6 +132,10 @@ app.MapGet("kinesis/createstream/my-stream", (KinesisTests kinesis) => kinesis.C
 
 app.MapGet("kinesis/putrecord/my-stream", (KinesisTests kinesis) => kinesis.PutRecord())
     .WithName("put-record")
+    .WithOpenApi();
+
+app.MapGet("kinesis/desribestream/my-stream", (KinesisTests Kinesis) => Kinesis.DescribeStream())
+    .WithName("describe-stream")
     .WithOpenApi();
 
 app.MapGet("kinesis/deletestream/my-stream", (KinesisTests kinesis) => kinesis.DeleteStream())
@@ -249,6 +258,11 @@ app.MapGet("knowledgebases/test-knowledge-base", (BedrockTests bedrock) => bedro
 app.MapGet("knowledgebases/test-knowledge-base/datasources/test-data-source", (BedrockTests bedrock) => bedrock.GetDataSourceResponse());
 app.MapPost("agents/test-agent/agentAliases/test-agent-alias/sessions/test-session/text", (BedrockTests bedrock) => bedrock.InvokeAgentResponse());
 app.MapPost("knowledgebases/test-knowledge-base/retrieve", (BedrockTests bedrock) => bedrock.RetrieveResponse());
+
+// Add a route for cross-account bucket creation
+app.MapGet("cross-account/createbucket/account_b", (CrossAccountTests crossAccount) => crossAccount.CreateBucketCrossAccount())
+    .WithName("create-bucket-cross-account")
+    .WithOpenApi();
 
 await PrepareAWSServer(app.Services);
 
