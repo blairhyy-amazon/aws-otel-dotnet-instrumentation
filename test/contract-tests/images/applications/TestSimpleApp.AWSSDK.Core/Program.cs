@@ -243,9 +243,9 @@ async Task PrepareAWSServer(IServiceProvider services)
     var ddbTests = services.GetRequiredService<DynamoDBTests>();
     var kinesisTests = services.GetRequiredService<KinesisTests>();
     
-    await ddbTests.CreateTable("test-table-2");
+    await ddbTests.CreateTable("test-table-cross-account");
     
-    await kinesisTests.CreateStream("test-stream-2");
+    await kinesisTests.CreateStream("test-stream-cross-account");
     
     // Create a topic for the SNS tests
     await snsTests.CreateTopic("test-topic");
