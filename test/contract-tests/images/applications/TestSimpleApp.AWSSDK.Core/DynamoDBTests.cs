@@ -25,6 +25,11 @@ public class DynamoDBTests(
         });
     }
 
+    public Task<ListTablesResponse> ListTables()
+    {
+        return ddb.ListTablesAsync(new ListTablesRequest());
+    }
+
     public Task<PutItemResponse> PutItem()
     {
         return ddb.PutItemAsync(new PutItemRequest

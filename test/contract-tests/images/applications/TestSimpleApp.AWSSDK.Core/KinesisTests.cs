@@ -20,6 +20,11 @@ public class KinesisTests(
         return kinesis.CreateStreamAsync(new CreateStreamRequest { StreamName = streamName });
     }
 
+    public Task<ListStreamsResponse> ListStreams()
+    {
+        return kinesis.ListStreamsAsync(new ListStreamsRequest());
+    }
+    
     public Task<PutRecordResponse> PutRecord()
     {
         // kinesis.CreateStreamAsync(new CreateStreamRequest { StreamName = "test_stream" });

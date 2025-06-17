@@ -4,13 +4,13 @@ using Amazon.S3.Model;
 namespace TestSimpleApp.AWSSDK.Core;
 
 public class CrossAccountTests(
-    [FromKeyedServices("cross-account")] IAmazonS3 crossAccountClient,
+    [FromKeyedServices("cross-account-s3")] IAmazonS3 crossAccountS3Client,
     ILogger<CrossAccountTests> logger) :
     ContractTest(logger)
 {
     public Task<PutBucketResponse> CreateBucketCrossAccount()
     {
-        return crossAccountClient.PutBucketAsync(new PutBucketRequest 
+        return crossAccountS3Client.PutBucketAsync(new PutBucketRequest 
         { 
             BucketName = "cross-account-bucket",
             BucketRegion = "eu-central-1"

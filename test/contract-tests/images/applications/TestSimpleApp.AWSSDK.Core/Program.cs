@@ -49,7 +49,7 @@ builder.Services
     .AddKeyedSingleton<IAmazonSimpleNotificationService>("error-sns", new AmazonSimpleNotificationServiceClient(new AmazonSimpleNotificationServiceConfig { ServiceURL = "http://localstack:4566" }))
     .AddKeyedSingleton<IAmazonStepFunctions>("error-stepfunctions", new AmazonStepFunctionsClient(new AmazonStepFunctionsConfig { ServiceURL = "http://localstack:4566" }))
     // cross account client - simulating STS assumed credentials for account B
-    .AddKeyedSingleton<IAmazonS3>("cross-account", new AmazonS3Client(
+    .AddKeyedSingleton<IAmazonS3>("cross-account-s3", new AmazonS3Client(
         new SessionAWSCredentials("account_b_access_key_id", "account_b_secret_access_key", "account_b_token"),
         new AmazonS3Config { 
             ServiceURL = "http://localstack:4566", 
@@ -243,10 +243,6 @@ async Task PrepareAWSServer(IServiceProvider services)
     var ddbTests = services.GetRequiredService<DynamoDBTests>();
     var kinesisTests = services.GetRequiredService<KinesisTests>();
     
-    await ddbTests.CreateTable("test-table-cross-account");
-    
-    await kinesisTests.CreateStream("test-stream-cross-account");
-    
     // Create a topic for the SNS tests
     await snsTests.CreateTopic("test-topic");
 
@@ -254,7 +250,17 @@ async Task PrepareAWSServer(IServiceProvider services)
     await stepfunctionsTests.CreateStateMachine("test-state-machine");
     await stepfunctionsTests.CreateActivity("test-activity");
     
+    var existingTables = await ddbTests.ListTables();
+    if (!existingTables.TableNames.Contains("test-table-cross-account"))
+    {
+        await ddbTests.CreateTable("test-table-cross-account");
+    }
 
+    var existingStreams = await kinesisTests.ListStreams();
+    if (!existingStreams.StreamNames.Contains("test-stream-cross-account"))
+    { 
+        await kinesisTests.CreateStream("test-stream-cross-account");
+    }
     // TODO: create resources for Lambda event source mapping test
 }
 
