@@ -896,7 +896,7 @@ public class AwsMetricAttributesGeneratorTest
         {
             { AttributeAWSSQSQueueUrl, "https://sqs.us-east-2.amazonaws.com/123456789012/MyQueue" },
         };
-        this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::SQS::Queue", "MyQueue", "https://sqs.us-east-2.amazonaws.com/123456789012/MyQueue");
+        this.ValidateRemoteResourceAttributes(attributesCombination, "AWS::SQS::Queue", "MyQueue", "https://sqs.us-east-2.amazonaws.com/123456789012/MyQueue", region: "us-east-2", accountId: "123456789012");
 
         attributesCombination = new Dictionary<string, object>
         {
