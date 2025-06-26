@@ -27,6 +27,26 @@ public class RegionalResourceArnParser
         return null;
     }
 
+    public static string? ExtractKinesisStreamNameFromArn(string? arn)
+    {
+        return ExtractResourceNameFromArn(arn)?.Replace("stream/", string.Empty);
+    }
+
+    public static string? ExtractDynamoDbTableNameFromArn(string? arn)
+    {
+        return ExtractResourceNameFromArn(arn)?.Replace("table/", string.Empty);
+    }
+
+    public static string? ExtractResourceNameFromArn(string? arn)
+    {
+        if (IsArn(arn))
+        {
+            return arn!.Split(':').Last();
+        }
+
+        return null;
+    }
+
     public static bool IsArn(string? arn)
     {
         // Check if arn follow the format:
@@ -43,7 +63,7 @@ public class RegionalResourceArnParser
 
     private static bool IsAccountId(string input)
     {
-        if (input == null || input.Length != 12)
+        if (input == null)
         {
             return false;
         }
