@@ -21,7 +21,6 @@ internal sealed class AwsAttributeKeys
     internal static readonly string AttributeAWSConsumerParentSpanKind = "aws.consumer.parent.span.kind";
 
     // Cross-account support
-    // Design document: https://tiny.amazon.com/1bomx30xl/quipW2BWSupp
     internal static readonly string AttributeAWSAuthAccessKey = "aws.auth.account.access_key";
     internal static readonly string AttributeAWSAuthRegion = "aws.auth.region";
     internal static readonly string AttributeAWSRemoteResourceAccessKey = "aws.remote.resource.account.access_key";

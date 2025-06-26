@@ -423,7 +423,8 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
 
     // This function is used to check for AWS specific attributes and set the RemoteResourceType
     // and RemoteResourceIdentifier accordingly. Right now, this sets it for DDB, S3, Kinesis,
-    // and SQS (using QueueName or QueueURL)
+    // and SQS (using QueueName or QueueURL). Returns true if remote resource type and identifier
+    // are successfully set, false otherwise.
     private static bool SetRemoteResourceTypeAndIdentifier(Activity span, ActivityTagsCollection attributes)
     {
         string? remoteResourceType = null;
@@ -439,7 +440,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
             else if (IsKeyPresent(span, AttributeAWSDynamoTableArn))
             {
                 remoteResourceType = NormalizedDynamoDBServiceName + "::Table";
-                remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSDynamoTableArn))?.Split(':').Last().Replace("table/", string.Empty);
+                remoteResourceIdentifier = EscapeDelimiters(RegionalResourceArnParser.ExtractDynamoDbTableNameFromArn((string?)span.GetTagItem(AttributeAWSDynamoTableArn)));
             }
             else if (IsKeyPresent(span, AttributeAWSKinesisStreamName))
             {
@@ -449,7 +450,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
             else if (IsKeyPresent(span, AttributeAWSKinesisStreamArn))
             {
                 remoteResourceType = NormalizedKinesisServiceName + "::Stream";
-                remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSKinesisStreamArn))?.Split(':').Last().Replace("stream/", string.Empty);
+                remoteResourceIdentifier = EscapeDelimiters(RegionalResourceArnParser.ExtractKinesisStreamNameFromArn((string?)span.GetTagItem(AttributeAWSKinesisStreamArn)));
             }
             else if (IsKeyPresent(span, AttributeAWSLambdaFunctionName))
             {
@@ -475,13 +476,13 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
             else if (IsKeyPresent(span, AttributeAWSSecretsManagerSecretArn))
             {
                 remoteResourceType = NormalizedSecretsManagerServiceName + "::Secret";
-                remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSSecretsManagerSecretArn))?.Split(':').Last();
+                remoteResourceIdentifier = EscapeDelimiters(RegionalResourceArnParser.ExtractResourceNameFromArn((string?)span.GetTagItem(AttributeAWSSecretsManagerSecretArn)));
                 cloudformationPrimaryIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSSecretsManagerSecretArn));
             }
             else if (IsKeyPresent(span, AttributeAWSSNSTopicArn))
             {
                 remoteResourceType = NormalizedSNSServiceName + "::Topic";
-                remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSSNSTopicArn))?.Split(':').Last();
+                remoteResourceIdentifier = EscapeDelimiters(RegionalResourceArnParser.ExtractResourceNameFromArn((string?)span.GetTagItem(AttributeAWSSNSTopicArn)));
                 cloudformationPrimaryIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSSNSTopicArn));
             }
             else if (IsKeyPresent(span, AttributeAWSSQSQueueName))
@@ -499,13 +500,16 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
             else if (IsKeyPresent(span, AttributeAWSStepFunctionsActivityArn))
             {
                 remoteResourceType = NormalizedStepFunctionsName + "::Activity";
-                remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSStepFunctionsActivityArn))?.Split(':').Last();
+                remoteResourceIdentifier =
+                    EscapeDelimiters(
+                        RegionalResourceArnParser.ExtractResourceNameFromArn(
+                            (string?)span.GetTagItem(AttributeAWSStepFunctionsActivityArn)));
                 cloudformationPrimaryIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSStepFunctionsActivityArn));
             }
             else if (IsKeyPresent(span, AttributeAWSStepFunctionsStateMachineArn))
             {
                 remoteResourceType = NormalizedStepFunctionsName + "::StateMachine";
-                remoteResourceIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSStepFunctionsStateMachineArn))?.Split(':').Last();
+                remoteResourceIdentifier = EscapeDelimiters(RegionalResourceArnParser.ExtractResourceNameFromArn((string?)span.GetTagItem(AttributeAWSStepFunctionsStateMachineArn)));
                 cloudformationPrimaryIdentifier = EscapeDelimiters((string?)span.GetTagItem(AttributeAWSStepFunctionsStateMachineArn));
             }
             else if (IsKeyPresent(span, AttributeAWSBedrockGuardrailId))
@@ -561,6 +565,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
         return false;
     }
 
+    // Extracts and sets the remote resource account ID and region from either an SQS queue URL or various AWS ARN attributes.
     private static bool SetRemoteResourceAccountIdAndRegion(Activity span, ActivityTagsCollection attributes)
     {
         string[] arnAttributes = new[]
@@ -608,6 +613,7 @@ internal class AwsMetricAttributeGenerator : IMetricAttributeGenerator
         return false;
     }
 
+    // Extracts and sets the remote resource account access key id and region from STS credentials.
     private static void SetRemoteResourceAccessKeyAndRegion(Activity span, ActivityTagsCollection attributes)
     {
         if (IsKeyPresent(span, AttributeAWSAuthAccessKey))

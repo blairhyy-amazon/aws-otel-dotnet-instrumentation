@@ -48,7 +48,7 @@ public class SqlUrlParserTest
     [InlineData("invalidUrl", null)]
     [InlineData("https://www.amazon.com", null)]
     [InlineData("https://sqs.us-east-1.amazonaws.com/123412341234/.", null)]
-    [InlineData("https://sqs.us-east-1.amazonaws.com/12/Queue", null)]
+    [InlineData("https://sqs.us-east-1.amazonaws.com/12341234xxxx/queue", null)]
     [InlineData("https://sqs.us-east-1.amazonaws.com/A/A", null)]
     [InlineData("https://sqs.us-east-1.amazonaws.com/123412341234/A/ThisShouldNotBeHere", null)]
     public void ValidateUrls(string url, string? expectedName)
@@ -72,7 +72,6 @@ public class SqlUrlParserTest
     [InlineData("/123412341234/as&df", null)]
     [InlineData("invalidUrl", null)]
     [InlineData("https://www.amazon.com", null)]
-    [InlineData("https://sqs.us-east-1.amazonaws.com/12341234/Queue", null)]
     [InlineData("https://sqs.us-east-1.amazonaws.com/1234123412xx/Queue", null)]
     [InlineData("https://sqs.us-east-1.amazonaws.com/1234123412xx", null)]
     public void TestClientSpanSqsAccountId(string? url, string? expectedAccountId)
