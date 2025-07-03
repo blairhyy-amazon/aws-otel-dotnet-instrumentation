@@ -15,7 +15,8 @@ public class RegionalResourceArnParser
     public static string? ExtractDynamoDbTableNameFromArn(string? arn) =>
         ExtractResourceNameFromArn(arn)?.Replace("table/", string.Empty);
 
-    public static string? ExtractResourceNameFromArn(string? arn) => ParseArn(arn)?[^1];
+    public static string? ExtractResourceNameFromArn(string? arn) =>
+        ParseArn(arn) is var parts && parts != null ? parts[parts.Length - 1] : null;
 
     /// <summary>
     /// Parses ARN with formats:
