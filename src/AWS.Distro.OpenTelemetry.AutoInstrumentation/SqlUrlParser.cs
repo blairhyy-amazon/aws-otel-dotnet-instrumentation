@@ -1,8 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-using System.Text;
-
 namespace AWS.Distro.OpenTelemetry.AutoInstrumentation;
 
 /// <summary>
@@ -46,11 +44,11 @@ public class SqsUrlParser
 
     public static string? GetRegion(string? url) => ParseUrl(url).region;
 
-    /// 
-    /// <returns></returns><summary>
-    /// Parses URL with formats:
-    /// Format: https://sqs.<region>.amazonaws.com/<accountId>/<queueName>
+    /// <summary>
+    /// Parses new SQS URLs https://sqs.region.amazonaws.com/accountI/queueName;
     /// </summary>
+    /// <param name="url">SQS URL to parse</param>
+    /// <returns>Tuple containing queue name, account ID, and region</returns>
     public static (string? QueueName, string? accountId, string? region) ParseUrl(string? url)
     {
         if (url == null)
