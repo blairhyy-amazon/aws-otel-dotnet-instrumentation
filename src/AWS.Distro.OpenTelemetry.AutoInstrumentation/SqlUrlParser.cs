@@ -19,6 +19,9 @@ public class SqsUrlParser
     /// custom URLs. Essentially, we require that the URL should have exactly three parts, delimited by
     /// /'s (excluding schema), the second part should be an account id consisting of digits, and the third part
     /// should be a valid queue name, per SQS naming conventions.
+    ///
+    /// Unlike ParseUrl which only handles new URLs and their queuename parsing, this
+    /// implements its own queue name parsing logic to support multiple URL formats.
     /// </summary>
     /// <param name="url"><see cref="string"/>Url to get the remote target from</param>
     /// <returns>parsed remote target</returns>
@@ -43,6 +46,11 @@ public class SqsUrlParser
 
     public static string? GetRegion(string? url) => ParseUrl(url).region;
 
+    /// 
+    /// <returns></returns><summary>
+    /// Parses URL with formats:
+    /// Format: https://sqs.<region>.amazonaws.com/<accountId>/<queueName>
+    /// </summary>
     public static (string? QueueName, string? accountId, string? region) ParseUrl(string? url)
     {
         if (url == null)
@@ -73,21 +81,7 @@ public class SqsUrlParser
 
     private static bool IsAccountId(string input)
     {
-        if (input == null)
-        {
-            return false;
-        }
-
-        try
-        {
-            long.Parse(input);
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-
-        return true;
+        return long.TryParse(input, out _);
     }
 
     private static bool IsValidQueueName(string input)
